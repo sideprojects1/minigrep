@@ -1,4 +1,5 @@
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::process::exit;
 
@@ -20,14 +21,12 @@ impl Config {
     }
 }
 
-fn get_file_contents(filepath: &str) -> String {
-    println!("In file {filepath}\n");
-
-    let contents = fs::read_to_string(filepath).expect("Failed to read input file.");
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_path)?;
 
     print!("With text:\n{contents}");
 
-    return contents;
+    Ok(())
 }
 
 fn main() {
@@ -38,5 +37,11 @@ fn main() {
         exit(1);
     });
 
-    let contents = get_file_contents(&config.file_path);
+    println!("Searching for: {}", config.query);
+    println!("In file: {}", config.file_path);
+
+    if let Err(e) = run(config) {
+        println!("Application error: {e}");
+        exit(1)
+    }
 }
