@@ -1,31 +1,21 @@
 use std::env;
-use std::fs;
+use std::process::exit;
 
-fn parse_command_line_arguments() -> (String, String) {
-    let args: Vec<String> = env::args().collect();
-
-    let query = args[1].clone();
-    let file_path = args[2].clone();
-
-    println!("Searching for {query}");
-    println!("In file {file_path}");
-
-    return (query, file_path);
-}
-
-fn get_file_contents(filepath: String) -> String {
-    println!("In file {filepath}");
-
-    let contents = fs::read_to_string(filepath)
-        .expect("Failed to read input file.");
-
-    print!("With text:\n{contents}");
-
-    return contents
-}
+use minigrep::Config;
 
 fn main() {
-    let (query, filepath) = parse_command_line_arguments();
+    let args: Vec<String> = env::args().collect();
 
-    let contents = get_file_contents(filepath);
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        print!("Problem parsing arguments: {err}\n");
+        exit(1);
+    });
+
+    println!("Searching for: {}", config.query);
+    println!("In file: {}", config.file_path);
+
+    if let Err(e) = minigrep::run(config) {
+        println!("Application error: {e}");
+        exit(1)
+    }
 }
